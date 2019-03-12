@@ -1,1 +1,0 @@
-"./main.o" "./tm4c123gh6pm_startup_ccs_gcc.o" "./modules/chksum.o" "./modules/driver.o" "./modules/spi.o" "./modules/tp.o" "./test/chksum_test.o" "./test/tp_test.o" -Wl,-T"../tm4c123gh6pm.lds" -Wl,--start-group -lc -lm -Wl,--end-group 
