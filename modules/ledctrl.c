@@ -32,11 +32,12 @@ extern TIMEPOINT* tp_global;
 
 /*****************************   Constants   *******************************/
 
-#define NORWEGIAN_YELLOW_DUR_MS 1000
-#define NORMAL_RED_DUR_MS 2000
-#define NORMAL_YELLOW_DUR_MS 1000
-#define NORMAL_GREEN_DUR_MS 3000
-#define NORMAL_RED_YELLOW_DUR_MS 1000
+#define NORWEGIAN_YELLOW_DUR_MS		1000
+
+#define NORMAL_RED_DUR_MS			2000
+#define NORMAL_YELLOW_DUR_MS		1000
+#define NORMAL_GREEN_DUR_MS 		3000
+#define NORMAL_RED_YELLOW_DUR_MS	1000
 
 /************************  Function declarations ***************************/
 
@@ -85,6 +86,7 @@ static void LED_CONTROLLER_del(LED_CONTROLLER* this)
 *   Function : deletes object
 ****************************************************************************/
 {
+	tp.del(this->tp_timer);
 	free(this);
 }
 
@@ -99,18 +101,22 @@ static void LED_CONTROLLER_operate(LED_CONTROLLER* this, LED* led_obj)
 	switch (this->mode)
 	{
 		case NORMAL:
+
 			_LED_CONTROLLER_mode_normal(this, led_obj);
 			break;
 
 		case NORWEGIAN:
+
 			_LED_CONTROLLER_mode_norwegian(this, led_obj);
 			break;
 
 		case EMERGENCY:
+
 			_LED_CONTROLLER_mode_emergency(this, led_obj);
 			break;
 
 		default:
+
 			this->mode = NORMAL;
 			break;
 	}
@@ -119,67 +125,72 @@ static void LED_CONTROLLER_operate(LED_CONTROLLER* this, LED* led_obj)
 
 static void _LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj)
 {
-    static NORMAL_STATES state = RED_ON;
+	static NORMAL_STATES state = RED_ON;
 
+	switch (state)
+	{
+		case RED_ON:
 
-    switch (state){
+			if(tp.delta_now(this->tp_timer,ms) < NORMAL_RED_DUR_MS)
+			{
+				led.set_color(led_obj, (RGB){1, 0, 0});
+			}
+			else
+			{
+				state = RED_YELLOW_ON;
+				tp.set(this->tp_timer, tp.now());
+			}
 
-      case RED_ON:
-	 if(tp.delta_now(this->tp_timer,ms) < NORMAL_RED_DUR_MS)
-	   {
-	     led.set_color(led_obj, (RGB){0,1,1});
-	   }
-	 else
-	   {
-	     state = RED_YELLOW_ON;
-	     tp.set(this->tp_timer,tp.now());
-	   }
-	 break;
+			break;
 
-      case RED_YELLOW_ON:
+		case RED_YELLOW_ON:
 
-	if(tp.delta_now(this->tp_timer,ms) < NORMAL_RED_YELLOW_DUR_MS)
-	  {
-	    led.set_color(led_obj, (RGB){0,1,0});
-	  }
-	else
-	  {
-	    state = GREEN_ON;
-	    tp.set(this->tp_timer,tp.now());
-	  }
-	break;
+			if(tp.delta_now(this->tp_timer,ms) < NORMAL_RED_YELLOW_DUR_MS)
+			{
+				led.set_color(led_obj, (RGB){1, 0, 1});
+			}
+			else
+			{
+				state = GREEN_ON;
+				tp.set(this->tp_timer, tp.now());
+			}
 
-      case GREEN_ON:
+			break;
 
-	if(tp.delta_now(this->tp_timer,ms) < NORMAL_GREEN_DUR_MS)
-	  {
-	    led.set_color(led_obj, (RGB){1,1,0});
-	  }
-	else
-	  {
-	    state = YELLOW_ON;
-	    tp.set(this->tp_timer,tp.now());
-	  }
-	break;
+		case GREEN_ON:
 
-      case YELLOW_ON :
-	if(tp.delta_now(this->tp_timer,ms) < NORMAL_YELLOW_DUR_MS)
-	   {
-	      led.set_color(led_obj, (RGB){1,0,1});
-	   }
-	else
-	   {
-	      state = RED_ON;
-	      tp.set(this->tp_timer,tp.now());
-	   }
-	break;
-    }
+			if(tp.delta_now(this->tp_timer,ms) < NORMAL_GREEN_DUR_MS)
+			{
+				led.set_color(led_obj, (RGB){0, 1, 0});
+			}
+			else
+			{
+				state = YELLOW_ON;
+				tp.set(this->tp_timer, tp.now());
+			}
+
+			break;
+
+		case YELLOW_ON:
+
+			if(tp.delta_now(this->tp_timer,ms) < NORMAL_YELLOW_DUR_MS)
+			{
+				led.set_color(led_obj, (RGB){0, 0, 1});
+			}
+			else
+			{
+				state = RED_ON;
+				tp.set(this->tp_timer, tp.now());
+			}
+
+			break;
+	}
 }
 
 static void _LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj)
 {
 	// reversed RBG
-	led.set_color(led_obj, (RGB){0,0,1});
+	led.set_color(led_obj, (RGB){0, 0, 1});
 
 	if (tp.delta_now(this->tp_timer, ms) >= NORWEGIAN_YELLOW_DUR_MS)
 	{
@@ -190,7 +201,7 @@ static void _LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj)
 
 static void _LED_CONTROLLER_mode_emergency(LED_CONTROLLER* this, LED* led_obj)
 {
-  led.set_color(led_obj, (RGB){0,0,1});
+ 	led.set_color(led_obj, (RGB){1, 0, 0});
 }
 
 static void LED_CONTROLLER_set_mode(LED_CONTROLLER* this, LEDCTRL_MODE mode)
