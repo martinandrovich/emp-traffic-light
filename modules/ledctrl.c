@@ -33,10 +33,10 @@ extern TIMEPOINT* tp_global;
 /*****************************   Constants   *******************************/
 
 #define NORWEGIAN_YELLOW_DUR_MS 1000
-#define NORMAL_RED_DUR_MS 400
-#define NORMAL_YELLOW_DUR_MS 300
-#define NORMAL_GREEN_DUR_MS 1500
-#define NORMAL_RED_YELLOW_DUR_MS 300
+#define NORMAL_RED_DUR_MS 2000
+#define NORMAL_YELLOW_DUR_MS 1000
+#define NORMAL_GREEN_DUR_MS 3000
+#define NORMAL_RED_YELLOW_DUR_MS 1000
 
 /************************  Function declarations ***************************/
 
@@ -140,7 +140,7 @@ static void _LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj)
 
 	if(tp.delta_now(this->tp_timer,ms) < NORMAL_RED_YELLOW_DUR_MS)
 	  {
-	    led.set_color(led_obj, (RGB){0,0,1});
+	    led.set_color(led_obj, (RGB){0,1,0});
 	  }
 	else
 	  {
