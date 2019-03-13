@@ -32,7 +32,10 @@ extern TIMEPOINT* tp_global;
 
 /*****************************   Constants   *******************************/
 
-#define BLINK_DUR_MS 200
+#define NORMAL_RED_DUR_MS 400
+#define NORMAL_YELLOW_DUR_MS 300
+#define NORMAL_GREEN_DUR_MS 1500
+#define NORMAL_RED_YELLOW_DUR_MS 300
 
 /************************  Function declarations ***************************/
 
@@ -69,7 +72,7 @@ static LED_CONTROLLER* LED_CONTROLLER_new(void)
 	// allocate memory
 	LED_CONTROLLER* this = malloc(sizeof(LED_CONTROLLER));
 
-	this->mode			= NORMAL;
+	this->mode		= NORMAL;
 
 	this->tp_timer		= tp.new();
 
@@ -100,11 +103,11 @@ static void LED_CONTROLLER_operate(LED_CONTROLLER* this, LED* led_obj)
 			break;
 
 		case NORWEGIAN :
-			_LED_CONTROLLER_mode_norwegian(this, led_obj);
+	//		_LED_CONTROLLER_mode_norwegian(this, led_obj);
 			break;
 
 		case EMERGENCY :
-			_LED_CONTROLLER_mode_emergency(this, led_obj);
+	//		_LED_CONTROLLER_mode_emergency(this, led_obj);
 			break;
 
 		default :
@@ -114,35 +117,77 @@ static void LED_CONTROLLER_operate(LED_CONTROLLER* this, LED* led_obj)
 	}
 }
 
-static void LED_CONTROLLER_callback(LED_CONTROLLER* this, INT32S duration_ms)
+
+static void _LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj)
 /****************************************************************************
-*   Input    : Duration
-*   Function : LED controller, chooses state
+*   Input    : this and the mode u want to set
+*   Function : set mode in this object
 ****************************************************************************/
 {
-	switch (duration_ms)
-	{
-		case -1:
-			this->direction = (this->direction == UP) ? DOWN : UP;
-			break;
-		// ^-- change mode if double click -- toggle -- does not change anything
-		default:
-			this->mode = (this->reference_ms > duration_ms) ? MANUAL : AUTO;
-			// if normal mode change
-			if(this->mode == MANUAL)
-			{
-				_LED_CONTROLLER_circulation(this);
-			}
-			else
-			{
-				__disable_irq();
-				tp.copy(this->tp_pressed, tp_global);
-				__enable_irq();
-			}
-			break;
-		// -- change mode if AUTO otherwise change to NORMAL and calculate new led.
-	};
+    static NORMAL_STATES state = RED_ON;
+
+
+    switch (state){
+
+      case RED_ON:
+	 if(tp.delta_now(this->tp_timer,ms) < NORMAL_RED_DUR_MS)
+	   {
+	     led.set_color(led_obj, (RGB){0,1,1});
+	   }
+	 else
+	   {
+	     state = RED_YELLOW_ON;
+	     tp.set(this->tp_timer,tp.now());
+	   }
+	 break;
+
+      case RED_YELLOW_ON:
+
+	if(tp.delta_now(this->tp_timer,ms) < NORMAL_RED_YELLOW_DUR_MS)
+	  {
+	    led.set_color(led_obj, (RGB){0,0,1});
+	  }
+	else
+	  {
+	    state = GREEN_ON;
+	    tp.set(this->tp_timer,tp.now());
+	  }
+	break;
+
+      case GREEN_ON:
+
+	if(tp.delta_now(this->tp_timer,ms) < NORMAL_GREEN_DUR_MS)
+	  {
+	    led.set_color(led_obj, (RGB){1,1,0});
+	  }
+	else
+	  {
+	    state = YELLOW_ON;
+	    tp.set(this->tp_timer,tp.now());
+	  }
+	break;
+
+      case YELLOW_ON :
+	if(tp.delta_now(this->tp_timer,ms) < NORMAL_YELLOW_DUR_MS)
+	   {
+	      led.set_color(led_obj, (RGB){1,0,1});
+	   }
+	else
+	   {
+	      state = RED_ON;
+	      tp.set(this->tp_timer,tp.now());
+	   }
+	break;
+    }
 }
+
+static void _LED_CONTROLLER_mode_emergency(LED_CONTROLLER* this, LED* led_obj)
+{
+  led.set_color(led_obj, (RGB){0,0,1});
+}
+
+
+
 
 static void LED_CONTROLLER_set_mode(LED_CONTROLLER* this, LEDCTRL_MODE mode)
 /****************************************************************************
@@ -153,24 +198,5 @@ static void LED_CONTROLLER_set_mode(LED_CONTROLLER* this, LEDCTRL_MODE mode)
 	this->mode = mode;
 }
 
-static void _LED_CONTROLLER_circulation(LED_CONTROLLER* this)
-/****************************************************************************
-*   Input    : this object
-*   Function : update led_color
-****************************************************************************/
-{
-	INT8U alias_state = this->led_color;
-
-	if(this->direction == UP)
-	{
-		alias_state += 1;
-		this->led_color = (this->led_color == MAXLED) ? MINLED : alias_state;
-	}
-	else
-	{
-		alias_state -= 1;
-		this->led_color = (this->led_color == MINLED) ? MAXLED : alias_state;
-	}
-}
 
 /****************************** End Of Module ******************************/

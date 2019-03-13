@@ -37,7 +37,7 @@ static void 	_LED_init(void);
 
 static BOOLEAN 	LED_get_state(LED* this);
 static void 	LED_set_state(LED* this, BOOLEAN state);
-static RGB 		LED_get_color(LED* this);
+static RGB 	LED_get_color(LED* this);
 static void 	LED_set_color(LED* this, RGB Value);
 static void 	LED_set_callback(LED* this, void(*callback)(void));
 static void 	LED_toggle_state(LED* this);
