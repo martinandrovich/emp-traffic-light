@@ -6,6 +6,7 @@
 #include "tp.h"
 #include "btn.h"
 #include "led.h"
+#include "ledctrl.h"
 
 /*****************************    Defines    *******************************/
 
@@ -52,25 +53,30 @@ int main(void)
     // init BUTTON instance (SW1)
     BUTTON* btn_sw1 = btn.new(SW1);
 
+    //
+    LED_CONTROLLER* ctrl = ledctrl.new();
 
     // set single press callback to invert LED color
     btn.set_callback(btn_sw1, SINGLE_PRESS, LAMBDA(void _(void)
     		{
-    			led.invert_colors(led_1);
+    			//ledctrl.set_mode(ctrl, NORWEGIAN);
+    		    led.set_color(led_1, (RGB){1, 0, 0});
             }
     ));
 
     // set single press callback to invert LED color
     btn.set_callback(btn_sw1, DOUBLE_PRESS, LAMBDA(void _(void)
             {
-                led.invert_colors(led_1);
+    			//ledctrl.set_mode(ctrl, EMERGENCY);
+                led.set_color(led_1, (RGB){0, 1, 0});
             }
     ));
 
     // set single press callback to invert LED color
     btn.set_callback(btn_sw1, LONG_PRESS, LAMBDA(void _(void)
             {
-                led.invert_colors(led_1);
+    			//ledctrl.set_mode(ctrl, NORMAL);
+                led.set_color(led_1, (RGB){0, 0, 1});
             }
     ));
 
@@ -78,6 +84,7 @@ int main(void)
 	for(;;)
 	{
 		btn.controller(btn_sw1);
+        ledctrl.operate(ctrl, led_1);
 	}
 
 	return 0;

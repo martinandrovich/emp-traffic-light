@@ -32,6 +32,7 @@ extern TIMEPOINT* tp_global;
 
 /*****************************   Constants   *******************************/
 
+#define NORWEGIAN_YELLOW_DUR_MS 1000
 #define NORMAL_RED_DUR_MS 400
 #define NORMAL_YELLOW_DUR_MS 300
 #define NORMAL_GREEN_DUR_MS 1500
@@ -97,7 +98,6 @@ static void LED_CONTROLLER_operate(LED_CONTROLLER* this, LED* led_obj)
 ****************************************************************************/
 {
 	switch ( this->mode ) {
-
 		case NORMAL:
 			_LED_CONTROLLER_mode_normal(this, led_obj);
 			break;
@@ -113,16 +113,11 @@ static void LED_CONTROLLER_operate(LED_CONTROLLER* this, LED* led_obj)
 		default :
 			this->mode = NORMAL;
 			break;
-
 	}
 }
 
 
 static void _LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj)
-/****************************************************************************
-*   Input    : this and the mode u want to set
-*   Function : set mode in this object
-****************************************************************************/
 {
     static NORMAL_STATES state = RED_ON;
 
@@ -181,13 +176,22 @@ static void _LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj)
     }
 }
 
+static void _LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj)
+{
+	// reversed RBG
+	led.set_color(led_obj, (RGB){1,0,1});
+
+	if (tp.delta_now(this->tp_timer, ms) >= NORWEGIAN_YELLOW_DUR_MS)
+	{
+		led.toggle(led_obj);
+		tp.set(this->tp_timer, tp.now());
+	}
+}
+
 static void _LED_CONTROLLER_mode_emergency(LED_CONTROLLER* this, LED* led_obj)
 {
   led.set_color(led_obj, (RGB){0,0,1});
 }
-
-
-
 
 static void LED_CONTROLLER_set_mode(LED_CONTROLLER* this, LEDCTRL_MODE mode)
 /****************************************************************************
@@ -196,7 +200,7 @@ static void LED_CONTROLLER_set_mode(LED_CONTROLLER* this, LEDCTRL_MODE mode)
 ****************************************************************************/
 {
 	this->mode = mode;
+	tp.set(this->tp_timer, tp.now());
 }
-
 
 /****************************** End Of Module ******************************/
