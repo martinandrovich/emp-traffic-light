@@ -34,6 +34,7 @@
 typedef struct BUTTON BUTTON;
 typedef enum   BTN_NAME BTN_NAME;
 typedef enum   BTN_STATE BTN_STATE;
+typedef enum   BTN_CB_TYPE BTN_CB_TYPE;
 
 /*****************************   Constants   *******************************/
 
