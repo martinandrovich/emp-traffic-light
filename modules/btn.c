@@ -43,7 +43,8 @@ static BUTTON*  BUTTON_new(BTN_NAME SW);
 static void		BUTTON_del(BUTTON* this);
 
 static void		BUTTON_controller(BUTTON* this);
-static void		BUTTON_set_callback(BUTTON* this, void(*callback)(INT32S duration_ms));
+//static void		BUTTON_set_callback(BUTTON* this, void(*callback)(INT32S duration_ms));
+static void 	BUTTON_set_callback(BUTTON* this, BTN_CB_TYPE cb_type, void(*callback)(void));
 
 static void		_BUTTON_is_key_down(BUTTON* this);
 static void		_BUTTON_debounce_button(BUTTON* this);
@@ -150,19 +151,34 @@ static void BUTTON_controller(BUTTON* this)
 		if (delta_pending >= abs(DOUBLEPRESS_DUR_MS - this->duration_ms))
 		{
 			this->pending_callback = FALSE;
-			this->callback(this->duration_ms);
+			this->callback_single();
 		}
 	}
 
 }
 
-static void BUTTON_set_callback(BUTTON* this, void(*callback)(INT32S duration_ms))
+static void	BUTTON_set_callback(BUTTON* this, BTN_CB_TYPE cb_type, void(*callback)(void));
 /****************************************************************************
 *   Output   : Object is input
 *   Function : Method for m_handler_button, pick mode
 ****************************************************************************/
 {
-	this->callback = callback;
+
+	switch (cb_type)
+	{
+		case SINGLE_PRESS:
+			this->callback_single = callback;
+			break;
+
+		case DOUBLE_PRESS:
+			this->callback_double = callback;
+			break;
+
+		case LONG_PRESS:
+			this->callback_long = callback;
+			break;
+	}
+
 }
 
 static void _BUTTON_is_key_down(BUTTON* this)
@@ -244,9 +260,8 @@ static void _BUTTON_key_press(BUTTON* this )
 		// check whether button has been doublepressed
 		if (diff_tp < DOUBLEPRESS_DUR_MS)
 		{
-			this->duration_ms = -1;
 			this->pending_callback = FALSE;
-			this->callback(this->duration_ms);
+			this->callback_double();
 		}
 		// otherwise init pending callback for single press
 		else
@@ -263,7 +278,7 @@ static void _BUTTON_key_press(BUTTON* this )
 	else if (temp_duration_ms >= LONGPRESS_DUR_MS)
 	{
 		this->duration_ms  = temp_duration_ms;
-		this->callback(this->duration_ms);
+		this->callback_long();
 
 		// change state to cooldown
 		this->state = COOLDOWN;

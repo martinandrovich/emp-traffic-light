@@ -53,7 +53,7 @@ extern struct BUTTON_CLASS
 
 	// Methods
 	void 	(*const controller)(BUTTON* this);
-	void 	(*const set_callback)(BUTTON* this, void(*callback)(INT32S duration_ms));
+	void 	(*const set_callback)(BUTTON* this, BTN_CB_TYPE cb_type , void(*callback)(void));
 
 } btn;
 
@@ -73,6 +73,13 @@ enum BTN_NAME
    SW1           =  4
 };
 
+enum BTN_CB_TYPE
+{
+   SINGLE_PRESS		=  0,
+   DOUBLE_PRESS		=  1,
+   LONG_PRESS		=  2
+};
+
 struct BUTTON
 {
 	BTN_NAME		button;
@@ -88,7 +95,11 @@ struct BUTTON
 
 	BOOLEAN			pending_callback;
 
-	void 			(*callback)(INT32S duration_ms);
+	//void 			(*callback)(INT32S duration_ms);
+
+	void 			(*callback_single)(void); // single press
+	void 			(*callback_double)(void); // double press
+	void 			(*callback_long)(void); // long press
 };
 
 /****************************** End Of Module ******************************/
