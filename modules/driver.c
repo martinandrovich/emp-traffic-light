@@ -1,5 +1,7 @@
 #include "driver.h"
 
+#define __embedded__
+
 // Missing definitions in tm4c123gh6pm.h file
 #define NVIC_INT_CTRL_PEND_SYST   0x04000000  // Pend a systick int
 #define NVIC_INT_CTRL_UNPEND_SYST 0x02000000  // Unpend a systick int

@@ -2,14 +2,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define __embedded__
-
 #include "driver.h"
 #include "tp.h"
 #include "btn.h"
 #include "led.h"
 
 /*****************************    Defines    *******************************/
+
+#define LAMBDA(c_) ({ c_ _;})
 
 /*****************************   Constants   *******************************/
 
@@ -37,28 +37,33 @@ int main(void)
     __disable_irq();
 
     // init SYSTICK
-    sys_tick_init(SYSTICK_DUR_MS);
     tp.init_systick(SYSTICK_DUR_MS, ms);
+    sys_tick_init(SYSTICK_DUR_MS);
 
     // enable interrupts
     __enable_irq();
 
-    // test methods
-	tp_test();
-
     // init LED instance
     LED* led_1 = led.new();
 
-    led.set_color(led_1, (RGB){1, 0, 0});
+    led.set_color(led_1, (RGB){0, 1, 0});
     led.set_state(led_1, 1);
 
     // init BUTTON instance (SW1)
     BUTTON* btn_sw1 = btn.new(SW1);
 
+
+    // set single press callback to invert LED color
+    btn.set_callback(btn_sw1, SINGLE_PRESS, LAMBDA(void _(void)
+    		{
+    			led.invert_colors(led_1);
+    		}
+    ));
+
 	// super-loop
 	for(;;)
 	{
-		for (int i = 0; i < 1000; i++);
+		btn.controller(btn_sw1);
 	}
 
 	return 0;
