@@ -6,6 +6,8 @@
 
 #include "driver.h"
 #include "tp.h"
+#include "btn.h"
+#include "led.h"
 
 /*****************************    Defines    *******************************/
 
@@ -52,11 +54,6 @@ int main(void)
 
     // init BUTTON instance (SW1)
     BUTTON* btn_sw1 = btn.new(SW1);
-
-    //
-    
-
-
 
 	// super-loop
 	for(;;)
