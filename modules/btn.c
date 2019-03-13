@@ -86,7 +86,10 @@ static BUTTON* BUTTON_new(BTN_NAME SW)
 
 	this->pending_callback	 	= FALSE;
 
-	this->callback				= NULL;
+	//this->callback				= NULL;
+	this->callback_single		= NULL;
+	this->callback_double		= NULL;
+	this->callback_long			= NULL;
 
 	_BUTTON_init_hardware(this);
 
