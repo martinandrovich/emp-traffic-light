@@ -129,7 +129,7 @@ static void LED_set_state(LED* this, BOOLEAN state)
 ****************************************************************************/
 {
 	this->state = state;
-	GPIO_PORTF_DATA_R &= ~(1 << LEDRED) | ~(1 << LEDBLUE) | ~(1 << LEDGREEN);
+	GPIO_PORTF_DATA_R &= ~((1 << LEDRED) | (1 << LEDGREEN) | (1 << LEDBLUE));
 
 	if(this->state == 1)
 	{

@@ -151,11 +151,8 @@ static void BUTTON_controller(BUTTON* this)
 	// check pending callback
 	if (this->pending_callback)
 	{
-
-		INT32U delta_pending = tp.delta_now(this->tp_pending, ms);
-
 		// check if callback is to be called
-		if (delta_pending >= abs(DOUBLEPRESS_DUR_MS - this->duration_ms))
+		if (tp.delta_now(this->tp_pending, ms) >= abs(DOUBLEPRESS_DUR_MS - this->duration_ms))
 		{
 			this->pending_callback = FALSE;
 			this->callback_single();
@@ -207,8 +204,7 @@ static void _BUTTON_is_key_down(BUTTON* this)
 			this->tp_pending = tp.new();
 		}
 
-			tp.set(this->tp_pressed, tp.now());
-
+		tp.set(this->tp_pressed, tp.now());
 	}
 }
 
@@ -224,7 +220,7 @@ static void _BUTTON_debounce_button(BUTTON* this)
 		// check if debounce duration has been passed
 		if(tp.delta_now(this->tp_pressed, ms) >= DEBOUNCE_DUR_MS)
 		{
-			this->db_delta_ms = (INT32S)tp.delta_now(this->tp_db, ms);
+			this->db_delta_ms = tp.delta_now(this->tp_db, ms);
 			tp.set(this->tp_db, tp.now());
 			this->state = KEY_DOWN;
 		}
@@ -243,7 +239,7 @@ static void _BUTTON_key_press(BUTTON* this )
 ****************************************************************************/
 {
 	// update duration since key got pressed down
-	INT32S temp_duration_ms  = (INT32S)tp.delta_now(this->tp_pressed, ms);
+	INT32S temp_duration_ms  = tp.delta_now(this->tp_pressed, ms);
 
 	// check if button has been released (pressed)
 	if(GPIO_PORTF_DATA_R & (1 << BTN_BIT))

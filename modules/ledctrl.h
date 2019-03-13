@@ -61,7 +61,6 @@ enum LEDCTRL_MODE
 struct LED_CONTROLLER
 {
 	LEDCTRL_MODE	mode;
-
 	TIMEPOINT*		tp_timer;
 };
 /***************************** END MODULE    **********************************/

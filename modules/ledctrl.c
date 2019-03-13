@@ -42,9 +42,9 @@ static void 			LED_CONTROLLER_del(LED_CONTROLLER* this);
 static void 			LED_CONTROLLER_operate(LED_CONTROLLER* this, LED* led_obj);
 static void 			LED_CONTROLLER_set_mode(LED_CONTROLLER* this, LEDCTRL_MODE mode);
 
-static void 			_LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj);
-static void 			_LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj);
-static void 			_LED_CONTROLLER_mode_emergency(LED_CONTROLLER* this, LED* led_obj);
+static volatile void	_LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj);
+static volatile void 	_LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj);
+static volatile void 	_LED_CONTROLLER_mode_emergency(LED_CONTROLLER* this, LED* led_obj);
 
 /****************************   Class Struct   *****************************/
 
@@ -70,7 +70,6 @@ static LED_CONTROLLER* LED_CONTROLLER_new(void)
 	LED_CONTROLLER* this = malloc(sizeof(LED_CONTROLLER));
 
 	this->mode			= NORMAL;
-
 	this->tp_timer		= tp.new();
 
 	return this;
@@ -93,26 +92,43 @@ static void LED_CONTROLLER_operate(LED_CONTROLLER* this, LED* led_obj)
 *   Function : LED controller, chooses state
 ****************************************************************************/
 {
-	switch ( this->mode ) {
+	switch (this->mode)
+	{
 		case NORMAL:
 			_LED_CONTROLLER_mode_normal(this, led_obj);
 			break;
 
-		case NORWEGIAN :
+		case NORWEGIAN:
 			_LED_CONTROLLER_mode_norwegian(this, led_obj);
 			break;
 
-		case EMERGENCY :
+		case EMERGENCY:
 			_LED_CONTROLLER_mode_emergency(this, led_obj);
 			break;
 
-		default :
+		default:
 			this->mode = NORMAL;
 			break;
 	}
 }
 
-static void _LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj)
+static void LED_CONTROLLER_set_mode(LED_CONTROLLER* this, LEDCTRL_MODE mode)
+/****************************************************************************
+*   Input    : this and the mode u want to set
+*   Function : set mode in this object
+****************************************************************************/
+{
+	this->mode = mode;
+	tp.set(this->tp_timer, tp.now());
+}
+
+
+static volatile void _LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj)
+{
+	return;
+}
+
+static volatile void _LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj)
 /****************************************************************************
 *   Input    : Duration
 *   Function : LED controller, chooses state
@@ -128,25 +144,9 @@ static void _LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj)
 	}
 }
 
-static void LED_CONTROLLER_set_mode(LED_CONTROLLER* this, LEDCTRL_MODE mode)
-/****************************************************************************
-*   Input    : this and the mode u want to set
-*   Function : set mode in this object
-****************************************************************************/
+static volatile void _LED_CONTROLLER_mode_emergency(LED_CONTROLLER* this, LED* led_obj)
 {
-	this->mode = mode;
-	tp.set(this->tp_timer, tp.now());
-}
-
-
-static void 			_LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj)
-{
-
-}
-
-static void 			_LED_CONTROLLER_mode_emergency(LED_CONTROLLER* this, LED* led_obj)
-{
-	
+	return;
 }
 
 /****************************** End Of Module ******************************/

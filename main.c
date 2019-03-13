@@ -26,7 +26,7 @@ extern void tp_test(void);
 
 void ISR_SYSTICK(void)
 {
-    tp.systick();
+	tp.systick();
 }
 
 /*******************************   Main   **********************************/
@@ -34,57 +34,54 @@ void ISR_SYSTICK(void)
 int main(void)
 {
 
-    // disable interrupts
-    __disable_irq();
+	// disable interrupts
+	__disable_irq();
 
-    // init SYSTICK
-    tp.init_systick(SYSTICK_DUR_MS, ms);
-    sys_tick_init(SYSTICK_DUR_MS);
+	// init SYSTICK
+	tp.init_systick(SYSTICK_DUR_MS, ms);
+	sys_tick_init(SYSTICK_DUR_MS);
 
-    // enable interrupts
-    __enable_irq();
+	// enable interrupts
+	__enable_irq();
 
-    // init LED instance
-    LED* led_1 = led.new();
+	// init LED instance
+	LED* led_1 = led.new();
 
-    led.set_color(led_1, (RGB){0, 1, 0});
-    led.set_state(led_1, 1);
+	led.set_color(led_1, (RGB){0, 1, 0});
+	led.set_state(led_1, 1);
 
-    // init BUTTON instance (SW1)
-    BUTTON* btn_sw1 = btn.new(SW1);
+	// init BUTTON instance (SW1)
+	BUTTON* btn_sw1 = btn.new(SW1);
 
-    //
-    LED_CONTROLLER* ctrl = ledctrl.new();
+	// init LED_CONTROLLER instance
+	LED_CONTROLLER* ctrl = ledctrl.new();
 
-    // set single press callback to invert LED color
-    btn.set_callback(btn_sw1, SINGLE_PRESS, LAMBDA(void _(void)
-    		{
-    			//ledctrl.set_mode(ctrl, NORWEGIAN);
-    		    led.set_color(led_1, (RGB){1, 0, 0});
-            }
-    ));
+	// set single press callback
+	btn.set_callback(btn_sw1, SINGLE_PRESS, LAMBDA(void _(void)
+		{
+			ledctrl.set_mode(ctrl, NORWEGIAN);
+		}
+	));
 
-    // set single press callback to invert LED color
-    btn.set_callback(btn_sw1, DOUBLE_PRESS, LAMBDA(void _(void)
-            {
-    			//ledctrl.set_mode(ctrl, EMERGENCY);
-                led.set_color(led_1, (RGB){0, 1, 0});
-            }
-    ));
+	// set double press callback
+	btn.set_callback(btn_sw1, DOUBLE_PRESS, LAMBDA(void _(void)
+		{
+			ledctrl.set_mode(ctrl, EMERGENCY);
+		}
+	 ));
 
-    // set single press callback to invert LED color
-    btn.set_callback(btn_sw1, LONG_PRESS, LAMBDA(void _(void)
-            {
-    			//ledctrl.set_mode(ctrl, NORMAL);
-                led.set_color(led_1, (RGB){0, 0, 1});
-            }
-    ));
+	 // set longs press callback
+	btn.set_callback(btn_sw1, LONG_PRESS, LAMBDA(void _(void)
+		{
+			ledctrl.set_mode(ctrl, NORMAL);
+		}
+	));
 
 	// super-loop
 	for(;;)
 	{
 		btn.controller(btn_sw1);
-        ledctrl.operate(ctrl, led_1);
+		ledctrl.operate(ctrl, led_1);
 	}
 
 	return 0;
