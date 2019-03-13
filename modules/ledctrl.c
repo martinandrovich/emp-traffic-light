@@ -33,6 +33,10 @@ extern TIMEPOINT* tp_global;
 /*****************************   Constants   *******************************/
 
 #define NORWEGIAN_YELLOW_DUR_MS 1000
+#define NORMAL_RED_DUR_MS 400
+#define NORMAL_YELLOW_DUR_MS 300
+#define NORMAL_GREEN_DUR_MS 1500
+#define NORMAL_RED_YELLOW_DUR_MS 300
 
 /************************  Function declarations ***************************/
 
@@ -112,27 +116,67 @@ static void LED_CONTROLLER_operate(LED_CONTROLLER* this, LED* led_obj)
 	}
 }
 
-static void LED_CONTROLLER_set_mode(LED_CONTROLLER* this, LEDCTRL_MODE mode)
-/****************************************************************************
-*   Input    : this and the mode u want to set
-*   Function : set mode in this object
-****************************************************************************/
+
+static void _LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj)
 {
-	this->mode = mode;
-	tp.set(this->tp_timer, tp.now());
+    static NORMAL_STATES state = RED_ON;
+
+
+    switch (state){
+
+      case RED_ON:
+	 if(tp.delta_now(this->tp_timer,ms) < NORMAL_RED_DUR_MS)
+	   {
+	     led.set_color(led_obj, (RGB){0,1,1});
+	   }
+	 else
+	   {
+	     state = RED_YELLOW_ON;
+	     tp.set(this->tp_timer,tp.now());
+	   }
+	 break;
+
+      case RED_YELLOW_ON:
+
+	if(tp.delta_now(this->tp_timer,ms) < NORMAL_RED_YELLOW_DUR_MS)
+	  {
+	    led.set_color(led_obj, (RGB){0,0,1});
+	  }
+	else
+	  {
+	    state = GREEN_ON;
+	    tp.set(this->tp_timer,tp.now());
+	  }
+	break;
+
+      case GREEN_ON:
+
+	if(tp.delta_now(this->tp_timer,ms) < NORMAL_GREEN_DUR_MS)
+	  {
+	    led.set_color(led_obj, (RGB){1,1,0});
+	  }
+	else
+	  {
+	    state = YELLOW_ON;
+	    tp.set(this->tp_timer,tp.now());
+	  }
+	break;
+
+      case YELLOW_ON :
+	if(tp.delta_now(this->tp_timer,ms) < NORMAL_YELLOW_DUR_MS)
+	   {
+	      led.set_color(led_obj, (RGB){1,0,1});
+	   }
+	else
+	   {
+	      state = RED_ON;
+	      tp.set(this->tp_timer,tp.now());
+	   }
+	break;
+    }
 }
 
-
-static volatile void _LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj)
-{
-	return;
-}
-
-static volatile void _LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj)
-/****************************************************************************
-*   Input    : Duration
-*   Function : LED controller, chooses state
-****************************************************************************/
+static void _LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj)
 {
 	// reversed RBG
 	led.set_color(led_obj, (RGB){1,0,1});
@@ -144,9 +188,19 @@ static volatile void _LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* l
 	}
 }
 
-static volatile void _LED_CONTROLLER_mode_emergency(LED_CONTROLLER* this, LED* led_obj)
+static void _LED_CONTROLLER_mode_emergency(LED_CONTROLLER* this, LED* led_obj)
 {
-	return;
+  led.set_color(led_obj, (RGB){0,0,1});
+}
+
+static void LED_CONTROLLER_set_mode(LED_CONTROLLER* this, LEDCTRL_MODE mode)
+/****************************************************************************
+*   Input    : this and the mode u want to set
+*   Function : set mode in this object
+****************************************************************************/
+{
+	this->mode = mode;
+	tp.set(this->tp_timer, tp.now());
 }
 
 /****************************** End Of Module ******************************/
