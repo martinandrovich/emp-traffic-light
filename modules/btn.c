@@ -110,6 +110,43 @@ static void BUTTON_del(BUTTON * this)
 	free(this);
 }
 
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "tp.h"
+
+void tp_test(void)
+{
+    // init test TIMEPOINT instances
+    TIMEPOINT* tp_test1 = tp.new();
+    TIMEPOINT* tp_test2 = tp.new();
+    TIMEPOINT* tp_test3 = tp.new();
+
+    // set tp_test1 to current (global) time (value of SYSTICK)
+    tp.set(tp_test1, tp.now());
+
+    // set tp_test2 to 0ns:0us:10ms:2s
+    tp.set(tp_test2, (uint64_t[]){ 0, 0, 10, 2 });
+
+    // copy value of tp_test2 into tp_test3
+    tp.copy(tp_test3, tp_test2);
+
+    // get absolute difference between tp_test1 and tp_test3 in ms
+    int32_t diff1 = tp.delta(tp_test1, tp_test3, ms);
+
+    // get absolute difference between current time and tp_test2 in ms
+    int32_t diff2 = tp.delta_now(tp_test2, ms);
+
+    for(uint32_t i = 0; i < 1000000; i++);
+    {
+        tp.set(tp_test2, tp.now());
+        volatile int test = tp.delta_now(tp_test1, ms);
+        for(int i = 0; i < 100; i++);
+    }
+}
+
+
 /*****************************   Functions   *******************************/
 
 static void BUTTON_controller(BUTTON* this)
@@ -145,10 +182,8 @@ static void BUTTON_controller(BUTTON* this)
 	// check pending callback
 	if (this->pending_callback)
 	{
-		// get duration since pending callback
-		__disable_irq();
-		INT32U delta_pending = tp.delta(this->tp_pending, tp_global, ms);
-		__enable_irq();
+
+		INT32U delta_pending = tp.delta_now(this->tp_pending, ms);
 
 		// check if callback is to be called
 		if (delta_pending >= abs(DOUBLEPRESS_DUR_MS - this->duration_ms))
@@ -198,14 +233,13 @@ static void _BUTTON_is_key_down(BUTTON* this)
 		// construct objects
 		if (this->tp_pressed == NULL)
 		{
-			this->tp_pressed = tp.new(NORMAL);
-			this->tp_db = tp.new(NORMAL);
-			this->tp_pending = tp.new(NORMAL);
+			this->tp_pressed = tp.new();
+			this->tp_db = tp.new();
+			this->tp_pending = tp.new();
 		}
 
-		__disable_irq();
-			tp.copy(this->tp_pressed, tp_global);
-		__enable_irq();
+			tp.set(this->tp_pressed, tp.now());
+
 	}
 }
 
@@ -218,17 +252,13 @@ static void _BUTTON_debounce_button(BUTTON* this)
 	// check if button is still pressed
 	if(!(GPIO_PORTF_DATA_R & (1 << BTN_BIT)))
 	{
-		__disable_irq();
-
 		// check if debounce duration has been passed
-		if(tp.delta(this->tp_pressed, tp_global, ms) >= DEBOUNCE_DUR_MS)
+		if(tp.delta_now(this->tp_pressed, ms) >= DEBOUNCE_DUR_MS)
 		{
-			this->db_delta_ms = (INT32S)tp.delta(this->tp_db, tp_global, ms);
-			tp.copy(this->tp_db, tp_global);
+			this->db_delta_ms = (INT32S)tp.delta_now(this->tp_db, ms);
+			tp.set(this->tp_db, tp.now());
 			this->state = KEY_DOWN;
 		}
-
-		__enable_irq();
 	}
 	else
 	{
@@ -244,18 +274,14 @@ static void _BUTTON_key_press(BUTTON* this )
 ****************************************************************************/
 {
 	// update duration since key got pressed down
-	__disable_irq();
-	INT32S temp_duration_ms  = (INT32S)tp.delta(this->tp_pressed, tp_global, ms);
-	__enable_irq();
+	INT32S temp_duration_ms  = (INT32S)tp.delta_now(this->tp_pressed, ms);
 
 	// check if button has been released (pressed)
 	if(GPIO_PORTF_DATA_R & (1 << BTN_BIT))
 	{
 		// update duration
-		__disable_irq();
 		this->duration_ms  = temp_duration_ms;
-		tp.copy(this->tp_released, tp_global);
-		__enable_irq();
+		tp.set(this->tp_released, tp.now());
 
 		// calculate time since last debounce
 		INT32U diff_tp = this->db_delta_ms + this->duration_ms;
@@ -269,10 +295,8 @@ static void _BUTTON_key_press(BUTTON* this )
 		// otherwise init pending callback for single press
 		else
 		{
-			__disable_irq();
-			tp.copy(this->tp_pending, tp_global);
+			tp.set(this->tp_pending, tp.now());
 			this->pending_callback = TRUE;
-			__enable_irq();
 		}
 
 		// change state to cooldown
@@ -290,14 +314,11 @@ static void _BUTTON_key_press(BUTTON* this )
 
 static void _BUTTON_key_cooldown(BUTTON* this)
 {
-	__disable_irq();
-
 	// check whether cooldown duration has passed & button has been released
-	if((tp.delta(this->tp_released, tp_global, ms) >= DEBOUNCE_DUR_MS) && (GPIO_PORTF_DATA_R & (1 << BTN_BIT)))
+	if((tp.delta_now(this->tp_released, ms) >= DEBOUNCE_DUR_MS) && (GPIO_PORTF_DATA_R & (1 << BTN_BIT)))
 	{
 		this->state = KEY_UP;
 	}
-	__enable_irq();
 }
 
 static void _BUTTON_init_hardware(BUTTON* this)

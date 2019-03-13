@@ -44,6 +44,20 @@ int main(void)
     // test methods
 	tp_test();
 
+    // init LED instance
+    LED* led_1 = led.new();
+
+    led.set_color(led_1, (RGB){1, 0, 0});
+    led.set_state(led_1, 1);
+
+    // init BUTTON instance (SW1)
+    BUTTON* btn_sw1 = btn.new(SW1);
+
+    //
+    
+
+
+
 	// super-loop
 	for(;;)
 	{
