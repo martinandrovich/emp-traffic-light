@@ -36,7 +36,7 @@ typedef struct	LED_CONTROLLER			LED_CONTROLLER;
 typedef struct	LED_CONTROLLER_CLASS	LED_CONTROLLER_CLASS;
 
 typedef enum	LEDCTRL_MODE 			LEDCTRL_MODE;
-typedef enum	LEDCTRL_DIR 			LEDCTRL_DIR;
+
 
 /*************************** MAIN Constructs   ********************************/
 extern const struct LED_CONTROLLER_CLASS
@@ -44,12 +44,8 @@ extern const struct LED_CONTROLLER_CLASS
 	LED_CONTROLLER*	(*new)(void);
 	void 			(*del)(LED_CONTROLLER* this);
 
-	void 			(*controller)(LED_CONTROLLER* this, LED* led_obj);
-	void 			(*callback)(LED_CONTROLLER* this, INT32S duration_ms);
+	void 			(*operate)(LED_CONTROLLER* this, LED* led_obj);
 	void 			(*set_mode)(LED_CONTROLLER* this, LEDCTRL_MODE mode);
-	LEDCTRL_MODE	(*get_mode)(LED_CONTROLLER* this);
-	void 			(*set_reference_ms)(LED_CONTROLLER* this, INT32S reference_ms);
-	INT32S			(*get_reference_ms)(LED_CONTROLLER* this);
 
 } ledctrl;
 
@@ -57,24 +53,15 @@ extern const struct LED_CONTROLLER_CLASS
 
 enum LEDCTRL_MODE
 {
-	MANUAL   =  0,
-	AUTO     =  1
-};
-
-enum LEDCTRL_DIR
-{
-	UP      =   0,
-	DOWN    =   1
+	NORMAL 	  = 0,
+	NORWEGIAN = 1,
+	EMERGENCY = 2
 };
 
 struct LED_CONTROLLER
 {
 	LEDCTRL_MODE	mode;
-	LEDCTRL_DIR		direction;
 
-	INT32S			reference_ms;
-	INT8U			led_color; // state of led {001} {010}... etc RGB
-
-	TIMEPOINT*		tp_pressed;
+	TIMEPOINT*		tp_timer;
 };
 /***************************** END MODULE    **********************************/

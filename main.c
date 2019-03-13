@@ -57,7 +57,21 @@ int main(void)
     btn.set_callback(btn_sw1, SINGLE_PRESS, LAMBDA(void _(void)
     		{
     			led.invert_colors(led_1);
-    		}
+            }
+    ));
+
+    // set single press callback to invert LED color
+    btn.set_callback(btn_sw1, DOUBLE_PRESS, LAMBDA(void _(void)
+            {
+                led.invert_colors(led_1);
+            }
+    ));
+
+    // set single press callback to invert LED color
+    btn.set_callback(btn_sw1, LONG_PRESS, LAMBDA(void _(void)
+            {
+                led.invert_colors(led_1);
+            }
     ));
 
 	// super-loop
