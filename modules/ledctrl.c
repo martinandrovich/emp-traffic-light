@@ -179,7 +179,7 @@ static void _LED_CONTROLLER_mode_normal(LED_CONTROLLER* this, LED* led_obj)
 static void _LED_CONTROLLER_mode_norwegian(LED_CONTROLLER* this, LED* led_obj)
 {
 	// reversed RBG
-	led.set_color(led_obj, (RGB){1,0,1});
+	led.set_color(led_obj, (RGB){0,0,1});
 
 	if (tp.delta_now(this->tp_timer, ms) >= NORWEGIAN_YELLOW_DUR_MS)
 	{

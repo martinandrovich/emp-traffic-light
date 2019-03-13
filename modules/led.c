@@ -37,7 +37,7 @@ static void 	_LED_init(void);
 
 static BOOLEAN 	LED_get_state(LED* this);
 static void 	LED_set_state(LED* this, BOOLEAN state);
-static RGB 	LED_get_color(LED* this);
+static RGB 		LED_get_color(LED* this);
 static void 	LED_set_color(LED* this, RGB Value);
 static void 	LED_set_callback(LED* this, void(*callback)(void));
 static void 	LED_toggle_state(LED* this);
@@ -72,6 +72,7 @@ static LED* LED_new(void)
 
 	this->state 	= 0;
 	this->color 	= (RGB){ 0, 0, 0 };
+	this->mode		= ACTIVE_HIGH;
 	this->callback 	= NULL;
 
 	_LED_init();
@@ -128,14 +129,37 @@ static void LED_set_state(LED* this, BOOLEAN state)
 *   Function : set_state
 ****************************************************************************/
 {
-	this->state = state;
-	GPIO_PORTF_DATA_R &= ~((1 << LEDRED) | (1 << LEDGREEN) | (1 << LEDBLUE));
-
-	if(this->state == 1)
+	switch (this->mode)
 	{
-		GPIO_PORTF_DATA_R 	|= 	(this->color.R 	<< LEDRED) 	 |
-								(this->color.G 	<< LEDGREEN) |
-								(this->color.B) << LEDBLUE;
+		case ACTIVE_HIGH:
+
+			this->state = state;
+			GPIO_PORTF_DATA_R &= ~((1 << LEDRED) | (1 << LEDGREEN) | (1 << LEDBLUE));
+
+			if(this->state == 1)
+			{
+				GPIO_PORTF_DATA_R 	|= 	(this->color.R 	<< LEDRED) 	 |
+										(this->color.G 	<< LEDGREEN) |
+										(this->color.B) << LEDBLUE;
+			}
+
+			break;
+
+		case ACTIVE_LOW:
+
+			this->state = state;
+			GPIO_PORTF_DATA_R |= ((1 << LEDRED) | (1 << LEDGREEN) | (1 << LEDBLUE));
+
+			if(this->state == 1)
+			{
+				GPIO_PORTF_DATA_R 	&= 	~(
+										(this->color.R 	<< LEDRED) 	 |
+										(this->color.G 	<< LEDGREEN) |
+										(this->color.B) << LEDBLUE
+										);
+			}
+
+			break;
 	}
 }
 

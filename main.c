@@ -46,6 +46,7 @@ int main(void)
 
 	// init LED instance
 	LED* led_1 = led.new();
+	led_1->mode = ACTIVE_LOW;
 
 	led.set_color(led_1, (RGB){0, 1, 0});
 	led.set_state(led_1, 1);

@@ -28,7 +28,7 @@
 
 typedef struct  LED LED;
 typedef struct  RGB RGB;
-typedef enum    LED_TYPE LED_TYPE;
+typedef enum	LED_MODE LED_MODE;
 
 #define LEDRED      1
 #define LEDBLUE     2
@@ -49,6 +49,7 @@ extern const struct LED_CLASS
 
 	void   		(*set_callback)(LED*, void (*callback)(void));
 	void   		(*set_state)(LED* this, BOOLEAN state);
+	void   		(*set_state_inv)(LED* this, BOOLEAN state);
 	BOOLEAN 	(*get_state)(LED* this);
 	void   		(*set_color)(LED* this, RGB);
 	RGB    		(*get_color)(LED* this);
@@ -58,6 +59,12 @@ extern const struct LED_CLASS
 } led;
 
 /*****************************    Constructs   *****************************/
+
+enum LED_MODE
+{
+	ACTIVE_HIGH,
+	ACTIVE_LOW
+};
 
 struct RGB
 {
@@ -70,6 +77,7 @@ struct LED
 {
 	BOOLEAN		state;
 	RGB 		color;
+	LED_MODE	mode;
 	void(*callback)(void);
 };
 
